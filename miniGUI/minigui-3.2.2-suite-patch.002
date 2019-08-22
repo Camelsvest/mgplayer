@@ -1,0 +1,29 @@
+--- libmgplus-1.4.0/configure.ac	2019-06-05 20:41:49.000000000 -0700
++++ libmgplus-1.4.0-fixed/configure.ac	2019-08-15 02:04:50.133075289 -0700
+@@ -102,7 +102,7 @@ detail_debug="no"
+ build_fashion_lfrdr="yes"
+ build_colorcomposite_support="yes"
+ build_gradientfill_support="yes"
+-build_ft2_support="yes"
++build_ft2_support="no"
+ #pixfmt_argb32_support="yes"
+ pixfmt_rgba32_support="yes"
+ pixfmt_abgr32_support="yes"
+@@ -245,6 +245,8 @@ fi
+ AC_SUBST(LIB_SUFFIX)
+ AM_CONDITIONAL(MGPLUS_NOSUFFIX, test "x$with_libsuffix" = "x")
+ 
++AM_CONDITIONAL(MGPLUS_FONT_FT2, test "x$build_ft2_support" = "xyes")
++
+ DEP_LIBS=
+ dnl Check for FreeType library
+ if test "x$build_ft2_support" != "xno"; then
+@@ -276,8 +278,6 @@ fi
+ CPPFLAGS="$CPPFLAGS $FT2_CFLAGS"
+ DEP_LIBS="$DEP_LIBS $MINIGUI_LIBS $FT2_LIBS -lpthread -lstdc++"
+ 
+-AM_CONDITIONAL(MGPLUS_FONT_FT2, test "x$build_ft2_support" = "xyes")
+-
+ dnl ========================================================================
+ dnl check the installation of MiniGUI
+ dnl ========================================================================

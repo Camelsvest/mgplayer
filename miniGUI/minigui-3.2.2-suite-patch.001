@@ -1,0 +1,11 @@
+--- ./mg-samples-3.2.2/mgplus/animate/p-code.c	2019-06-05 20:40:45.000000000 -0700
++++ ./mg-samples-3.2.2-fixed/mgplus/animate/p-code.c	2019-08-13 00:14:59.380070645 -0700
+@@ -548,7 +548,7 @@ void * CreateMethod(int arg_counts)
+ 	return pex;
+ }
+ 
+-inline unsigned char* get_ptr(pcode_method_ex_t* pex, int size) 
++unsigned char* get_ptr(pcode_method_ex_t* pex, int size) 
+ {
+ 	unsigned char* p = pex->method->codes + pex->method->code_len;
+ 	if( (pex->method->code_len+size) > pex->buf){
