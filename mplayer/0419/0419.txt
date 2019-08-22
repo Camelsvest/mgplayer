@@ -1,0 +1,2 @@
+1. Remove unused header files.
+2. Add default FPS to 30 if not detected.

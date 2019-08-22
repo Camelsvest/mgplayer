@@ -1,0 +1,10 @@
+#ifndef _MGPLAYER_WINDEF_H_
+#define _MGPLAYER_WINDEF_H_
+
+#define DEFAULT_WINDOW_CAPTION  "MGPlayer"
+#define DEFAULT_VIDEO_WINDOW_CAPTION    "VideoWindow"
+
+#define MAIN_WINDOW_ID  0x1001
+#define VIDEO_WINDOW_ID 0x1002
+
+#endif
