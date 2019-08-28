@@ -1876,36 +1876,36 @@ static int generate_video_frame(sh_video_t *sh_video, demux_stream_t *d_video)
     double pts;
 
     while (1) {
-    	int drop_frame = check_framedrop(sh_video->frametime);
-	    void *decoded_frame;
-        current_module = "decode video";
-        // XXX Time used in this call is not counted in any performance
-        // timer now, OSD is not updated correctly for filter-added frames
-        if (vf_output_queued_frame(sh_video->vfilter))
-            break;
-        current_module = "video_read_frame";
-        in_size = ds_get_packet_pts(d_video, &start, &pts);
-        if (in_size < 0) {
-            // try to extract last frames in case of decoder lag
-            in_size = 0;
-            pts = MP_NOPTS_VALUE;
-            hit_eof = 1;
-        }
-        if (in_size > max_framesize)
-            max_framesize = in_size;
-        current_module = "decode video";
-        decoded_frame = decode_video(sh_video, start, in_size, drop_frame, pts);
-        if (decoded_frame) {
-            update_subtitles(sh_video, sh_video->pts, mpctx->d_sub, 0);
+	int drop_frame = check_framedrop(sh_video->frametime);
+	void *decoded_frame;
+	current_module = "decode video";
+	// XXX Time used in this call is not counted in any performance
+	// timer now, OSD is not updated correctly for filter-added frames
+	if (vf_output_queued_frame(sh_video->vfilter))
+	    break;
+	current_module = "video_read_frame";
+	in_size = ds_get_packet_pts(d_video, &start, &pts);
+	if (in_size < 0) {
+	    // try to extract last frames in case of decoder lag
+	    in_size = 0;
+	    pts = MP_NOPTS_VALUE;
+	    hit_eof = 1;
+	}
+	if (in_size > max_framesize)
+	    max_framesize = in_size;
+	current_module = "decode video";
+	decoded_frame = decode_video(sh_video, start, in_size, drop_frame, pts);
+	if (decoded_frame) {
+	    update_subtitles(sh_video, sh_video->pts, mpctx->d_sub, 0);
 /*	    update_teletext(sh_video, mpctx->demuxer, 0);*/
 	    update_osd_msg();
 	    current_module = "filter video";
 	    if (filter_video(sh_video, decoded_frame, sh_video->pts))
-            break;
-        } else if (drop_frame)
-            return -1;
-        if (hit_eof)
-            return 0;
+		break;
+	} else if (drop_frame)
+	    return -1;
+	if (hit_eof)
+	    return 0;
     }
     return 1;
 }
@@ -2541,85 +2541,85 @@ static double update_video(int *blit_frame)
     double frame_time;
     *blit_frame = 0; // Don't blit if we hit EOF
     if (!correct_pts) {
-        unsigned char* start=NULL;
-        void *decoded_frame = NULL;
-        int drop_frame=0;
-        int in_size;
+	unsigned char* start=NULL;
+	void *decoded_frame = NULL;
+	int drop_frame=0;
+	int in_size;
 
-        current_module = "video_read_frame";
-        frame_time = sh_video->next_frame_time;
-        in_size = video_read_frame(sh_video, &sh_video->next_frame_time,
+	current_module = "video_read_frame";
+	frame_time = sh_video->next_frame_time;
+	in_size = video_read_frame(sh_video, &sh_video->next_frame_time,
 				   &start, force_fps);
 #ifdef CONFIG_DVDNAV
 	/// wait, still frame or EOF
-        if (mpctx->stream->type == STREAMTYPE_DVDNAV && in_size < 0) {
-            if (mp_dvdnav_is_eof(mpctx->stream))
+	if (mpctx->stream->type == STREAMTYPE_DVDNAV && in_size < 0) {
+	    if (mp_dvdnav_is_eof(mpctx->stream))
                 return -1;
-            if (mpctx->d_video)
+	    if (mpctx->d_video)
                 mpctx->d_video->eof = 0;
-            if (mpctx->d_audio)
+	    if (mpctx->d_audio)
                 mpctx->d_audio->eof = 0;
-            mpctx->stream->eof = 0;
-        } else
+	    mpctx->stream->eof = 0;
+	} else
 #endif
-            if (in_size < 0)
-                return -1;
-        if (in_size > max_framesize)
-            max_framesize = in_size; // stats
-        sh_video->timer += frame_time;
-        if (mpctx->sh_audio)
-            mpctx->delay -= frame_time;
-        // video_read_frame can change fps (e.g. for ASF video)
-        vo_fps = sh_video->fps;
-        drop_frame = check_framedrop(frame_time);
+	if (in_size < 0)
+	    return -1;
+	if (in_size > max_framesize)
+	    max_framesize = in_size; // stats
+	sh_video->timer += frame_time;
+	if (mpctx->sh_audio)
+	    mpctx->delay -= frame_time;
+	// video_read_frame can change fps (e.g. for ASF video)
+	vo_fps = sh_video->fps;
+	drop_frame = check_framedrop(frame_time);
 	
 /*	update_teletext(sh_video, mpctx->demuxer, 0);*/
-        update_osd_msg();
-        current_module = "decode_video";
+	update_osd_msg();
+	current_module = "decode_video";
 #ifdef CONFIG_DVDNAV
-        decoded_frame = mp_dvdnav_restore_smpi(&in_size,&start,decoded_frame);
+	decoded_frame = mp_dvdnav_restore_smpi(&in_size,&start,decoded_frame);
 	/// still frame has been reached, no need to decode
-        if (in_size > 0 && !decoded_frame)
+	if (in_size > 0 && !decoded_frame)
 #endif
-        decoded_frame = decode_video(sh_video, start, in_size, drop_frame,
+	decoded_frame = decode_video(sh_video, start, in_size, drop_frame,
 				     sh_video->pts);
 #ifdef CONFIG_DVDNAV
 	/// save back last still frame for future display
-        mp_dvdnav_save_smpi(in_size,start,decoded_frame);
+	mp_dvdnav_save_smpi(in_size,start,decoded_frame);
 #endif
-        current_module = "filter_video";
-        *blit_frame = (decoded_frame && 1/*filter_video(sh_video, decoded_frame,
-                                       sh_video->pts)*/);
-        update_subtitles(sh_video, sh_video->pts, mpctx->d_sub, 0);
+	current_module = "filter_video";
+	*blit_frame = (decoded_frame && 1/*filter_video(sh_video, decoded_frame,
+						    sh_video->pts)*/);
+							update_subtitles(sh_video, sh_video->pts, mpctx->d_sub, 0);
     }
     else {
-        int res = generate_video_frame(sh_video, mpctx->d_video);
-        if (!res)
-            return -1;
-        ((vf_instance_t *)sh_video->vfilter)->control(sh_video->vfilter,
+	int res = generate_video_frame(sh_video, mpctx->d_video);
+	if (!res)
+	    return -1;
+	((vf_instance_t *)sh_video->vfilter)->control(sh_video->vfilter,
 					    VFCTRL_GET_PTS, &sh_video->pts);
-        if (sh_video->pts == MP_NOPTS_VALUE) {
-            mp_msg(MSGT_CPLAYER, MSGL_ERR, "pts after filters MISSING\n");
-            sh_video->pts = sh_video->last_pts;
-        }
-        if (sh_video->last_pts == MP_NOPTS_VALUE)
-            sh_video->last_pts= sh_video->pts;
-        else if (sh_video->last_pts > sh_video->pts) {
-            // make a guess whether this is some kind of discontinuity
-            // we should jump along with or some wron timestamps we
-            // should replace instead
+	if (sh_video->pts == MP_NOPTS_VALUE) {
+	    mp_msg(MSGT_CPLAYER, MSGL_ERR, "pts after filters MISSING\n");
+	    sh_video->pts = sh_video->last_pts;
+	}
+	if (sh_video->last_pts == MP_NOPTS_VALUE)
+	    sh_video->last_pts= sh_video->pts;
+	else if (sh_video->last_pts > sh_video->pts) {
+	    // make a guess whether this is some kind of discontinuity
+	    // we should jump along with or some wron timestamps we
+	    // should replace instead
             if (sh_video->pts < sh_video->last_pts - 20 * sh_video->frametime)
-                sh_video->last_pts = sh_video->pts;
-            else
-                sh_video->pts = sh_video->last_pts + sh_video->frametime;
-            mp_msg(MSGT_CPLAYER, MSGL_V, "pts value < previous\n");
-        }
-        frame_time = sh_video->pts - sh_video->last_pts;
-        sh_video->last_pts = sh_video->pts;
-        sh_video->timer += frame_time;
-        if(mpctx->sh_audio)
-            mpctx->delay -= frame_time;
-        *blit_frame = res > 0;
+		sh_video->last_pts = sh_video->pts;
+	    else
+	        sh_video->pts = sh_video->last_pts + sh_video->frametime;
+	    mp_msg(MSGT_CPLAYER, MSGL_V, "pts value < previous\n");
+	}
+	frame_time = sh_video->pts - sh_video->last_pts;
+	sh_video->last_pts = sh_video->pts;
+	sh_video->timer += frame_time;
+	if(mpctx->sh_audio)
+	    mpctx->delay -= frame_time;
+	*blit_frame = res > 0;
     }
     return frame_time;
 }
@@ -4055,7 +4055,7 @@ main:
                reinit_audio_chain();
            }
 
-           /*========================== PLAY AUDIO ============================*/
+/*========================== PLAY AUDIO ============================*/
 
            if (mpctx->sh_audio)
                if (!fill_audio_out_buffers())
