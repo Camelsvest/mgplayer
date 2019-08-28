@@ -479,7 +479,7 @@ int video_read_frame(sh_video_t* sh_video,float* frame_time_ptr,unsigned char** 
         // get mpeg fps:
         if(sh_video->fps!=fps)
             if(!force_fps && !telecine){
-                p_msg(MSGT_CPLAYER,MSGL_WARN,"Warning! FPS changed %5.3f -> %5.3f  (%f) [%d]  \n",sh_video->fps,fps,sh_video->fps-fps,picture.frame_rate_code);
+                mp_msg(MSGT_CPLAYER,MSGL_WARN,"Warning! FPS changed %5.3f -> %5.3f  (%f) [%d]  \n",sh_video->fps,fps,sh_video->fps-fps,picture.frame_rate_code);
                 sh_video->fps=fps;
                 sh_video->frametime=1.0/fps;
             }
