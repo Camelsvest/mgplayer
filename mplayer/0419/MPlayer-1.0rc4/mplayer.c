@@ -2430,59 +2430,59 @@ int reinit_video_chain(void) {
     double ar=-1.0;
     //================== Init VIDEO (codec & libvo) ==========================
     if(!fixed_vo || !(initialized_flags&INITIALIZED_VO)){
-    current_module="preinit_libvo";
+        current_module="preinit_libvo";
 
-    //shouldn't we set dvideo->id=-2 when we fail?
-    vo_config_count=0;
-    //if((mpctx->video_out->preinit(vo_subdevice))!=0){
-    if(!(mpctx->video_out=init_best_video_out(video_driver_list))){
-      mp_msg(MSGT_CPLAYER,MSGL_FATAL,MSGTR_ErrorInitializingVODevice);
-      goto err_out;
+        //shouldn't we set dvideo->id=-2 when we fail?
+        vo_config_count=0;
+        //if((mpctx->video_out->preinit(vo_subdevice))!=0){
+        if(!(mpctx->video_out=init_best_video_out(video_driver_list))){
+            mp_msg(MSGT_CPLAYER,MSGL_FATAL,MSGTR_ErrorInitializingVODevice);
+            goto err_out;
+        }
+        initialized_flags|=INITIALIZED_VO;
     }
-    initialized_flags|=INITIALIZED_VO;
-  }
 
-  if(stream_control(mpctx->demuxer->stream, STREAM_CTRL_GET_ASPECT_RATIO, &ar) != STREAM_UNSUPPORTED)
-      mpctx->sh_video->stream_aspect = ar;
-  current_module="init_video_filters";
-  {
-    char* vf_arg[] = { "_oldargs_", (char*)mpctx->video_out , NULL };
-    sh_video->vfilter=(void*)vf_open_filter(NULL,"vo",vf_arg);
-  }
+    if(stream_control(mpctx->demuxer->stream, STREAM_CTRL_GET_ASPECT_RATIO, &ar) != STREAM_UNSUPPORTED)
+        mpctx->sh_video->stream_aspect = ar;
+    current_module="init_video_filters";
+    {
+        char* vf_arg[] = { "_oldargs_", (char*)mpctx->video_out , NULL };
+        sh_video->vfilter=(void*)vf_open_filter(NULL,"vo",vf_arg);
+    }
 #ifdef CONFIG_MENU
-  if(use_menu) {
-    char* vf_arg[] = { "_oldargs_", menu_root, NULL };
-    vf_menu = vf_open_plugin(libmenu_vfs,sh_video->vfilter,"menu",vf_arg);
-    if(!vf_menu) {
-      mp_msg(MSGT_CPLAYER,MSGL_ERR,MSGTR_CantOpenLibmenuFilterWithThisRootMenu,menu_root);
-      use_menu = 0;
+    if(use_menu) {
+        char* vf_arg[] = { "_oldargs_", menu_root, NULL };
+        vf_menu = vf_open_plugin(libmenu_vfs,sh_video->vfilter,"menu",vf_arg);
+        if(!vf_menu) {
+            mp_msg(MSGT_CPLAYER,MSGL_ERR,MSGTR_CantOpenLibmenuFilterWithThisRootMenu,menu_root);
+            use_menu = 0;
+        }
     }
-  }
-  if(vf_menu)
-    sh_video->vfilter=(void*)vf_menu;
+    if(vf_menu)
+        sh_video->vfilter=(void*)vf_menu;
 #endif
 
 #ifdef CONFIG_ASS
-  if(ass_enabled) {
-    int i;
-    int insert = 1;
-    if (vf_settings)
-      for (i = 0; vf_settings[i].name; ++i)
-        if (strcmp(vf_settings[i].name, "ass") == 0) {
-          insert = 0;
-          break;
+    if(ass_enabled) {
+        int i;
+        int insert = 1;
+        if (vf_settings)
+            for (i = 0; vf_settings[i].name; ++i)
+                if (strcmp(vf_settings[i].name, "ass") == 0) {
+                    insert = 0;
+                    break;
+                }
+        if (insert) {
+            extern vf_info_t vf_info_ass;
+            const vf_info_t* libass_vfs[] = {&vf_info_ass, NULL};
+            char* vf_arg[] = {"auto", "1", NULL};
+            vf_instance_t* vf_ass = vf_open_plugin(libass_vfs,sh_video->vfilter,"ass",vf_arg);
+            if (vf_ass)
+                sh_video->vfilter=(void*)vf_ass;
+            else
+            mp_msg(MSGT_CPLAYER,MSGL_ERR, "ASS: cannot add video filter\n");
         }
-    if (insert) {
-      extern vf_info_t vf_info_ass;
-      const vf_info_t* libass_vfs[] = {&vf_info_ass, NULL};
-      char* vf_arg[] = {"auto", "1", NULL};
-      vf_instance_t* vf_ass = vf_open_plugin(libass_vfs,sh_video->vfilter,"ass",vf_arg);
-      if (vf_ass)
-        sh_video->vfilter=(void*)vf_ass;
-      else
-        mp_msg(MSGT_CPLAYER,MSGL_ERR, "ASS: cannot add video filter\n");
     }
-  }
 #endif
 
   sh_video->vfilter=(void*)append_filters(sh_video->vfilter);

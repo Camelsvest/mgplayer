@@ -308,40 +308,43 @@ const vo_functions_t* init_best_video_out(char** vo_list){
     int i;
     // first try the preferred drivers, with their optional subdevice param:
     if(vo_list && vo_list[0])
-      while(vo_list[0][0]){
-        char* vo=strdup(vo_list[0]);
-	vo_subdevice=strchr(vo,':');
-	if (!strcmp(vo, "pgm"))
-	    mp_msg(MSGT_CPLAYER, MSGL_ERR, MSGTR_VO_PGM_HasBeenReplaced);
-	if (!strcmp(vo, "md5"))
-	    mp_msg(MSGT_CPLAYER, MSGL_ERR, MSGTR_VO_MD5_HasBeenReplaced);
-	if(vo_subdevice){
-	    vo_subdevice[0]=0;
-	    ++vo_subdevice;
-	}
-	for(i=0;video_out_drivers[i];i++){
-	    const vo_functions_t* video_driver=video_out_drivers[i];
-	    const vo_info_t *info = video_driver->info;
-	    if(!strcmp(info->short_name,vo)){
-		// name matches, try it
-		if(!video_driver->preinit(vo_subdevice))
-		{
-		    free(vo);
-		    return video_driver; // success!
-		}
-	    }
-	}
-        // continue...
-	free(vo);
-	++vo_list;
-	if(!(vo_list[0])) return NULL; // do NOT fallback to others
-      }
+        while(vo_list[0][0]){
+            char* vo=strdup(vo_list[0]);
+            vo_subdevice=strchr(vo,':');
+            if (!strcmp(vo, "pgm"))
+                mp_msg(MSGT_CPLAYER, MSGL_ERR, MSGTR_VO_PGM_HasBeenReplaced);
+            if (!strcmp(vo, "md5"))
+                mp_msg(MSGT_CPLAYER, MSGL_ERR, MSGTR_VO_MD5_HasBeenReplaced);
+            if(vo_subdevice){
+                vo_subdevice[0]=0;
+                ++vo_subdevice;
+            }
+            for(i=0;video_out_drivers[i];i++){
+                const vo_functions_t* video_driver=video_out_drivers[i];
+                const vo_info_t *info = video_driver->info;
+                if(!strcmp(info->short_name,vo)){
+                    // name matches, try it
+                    if(!video_driver->preinit(vo_subdevice))
+                    {
+                        free(vo);
+                        return video_driver; // success!
+                    }
+                }
+            }
+            // continue...
+            free(vo);
+            ++vo_list;
+            if(!(vo_list[0])) return NULL; // do NOT fallback to others
+        }
     // now try the rest...
     vo_subdevice=NULL;
     for(i=0;video_out_drivers[i];i++){
-	const vo_functions_t* video_driver=video_out_drivers[i];
-	if(!video_driver->preinit(vo_subdevice))
-	    return video_driver; // success!
+        const vo_functions_t* video_driver=video_out_drivers[i];
+        if(!video_driver->preinit(vo_subdevice))
+        {
+            mp_msg(MSGT_GLOBAL, MSGL_INFO,"video_driver:\t%s\n", video_driver->info->name);
+            return video_driver; // success!
+        }
     }
     return NULL;
 }
