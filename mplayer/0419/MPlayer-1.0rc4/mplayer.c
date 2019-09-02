@@ -1,3 +1,4 @@
+
 /*
  * This file is part of MPlayer.
  *
@@ -2485,53 +2486,53 @@ int reinit_video_chain(void) {
     }
 #endif
 
-  sh_video->vfilter=(void*)append_filters(sh_video->vfilter);
+    sh_video->vfilter=(void*)append_filters(sh_video->vfilter);
 
 #ifdef CONFIG_ASS
-  if (ass_enabled)
-    ((vf_instance_t *)sh_video->vfilter)->control(sh_video->vfilter, VFCTRL_INIT_EOSD, ass_library);
+    if (ass_enabled)
+        ((vf_instance_t *)sh_video->vfilter)->control(sh_video->vfilter, VFCTRL_INIT_EOSD, ass_library);
 #endif
 
-  current_module="init_video_codec";
+    current_module="init_video_codec";
 
 	audio_eof = 0;
 
-  mp_msg(MSGT_CPLAYER,MSGL_INFO,"==========================================================================\n");
-  init_best_video_codec(sh_video,video_codec_list,video_fm_list);
-  mp_msg(MSGT_CPLAYER,MSGL_INFO,"==========================================================================\n");
+    mp_msg(MSGT_CPLAYER,MSGL_INFO,"==========================================================================\n");
+    init_best_video_codec(sh_video,video_codec_list,video_fm_list);
+    mp_msg(MSGT_CPLAYER,MSGL_INFO,"==========================================================================\n");
 
-  if(!sh_video->initialized){
-    if(!fixed_vo) uninit_player(INITIALIZED_VO);
-    goto err_out;
-  }
+    if(!sh_video->initialized){
+        if(!fixed_vo) uninit_player(INITIALIZED_VO);
+        goto err_out;
+    }
 
-  initialized_flags|=INITIALIZED_VCODEC;
+    initialized_flags|=INITIALIZED_VCODEC;
+    
+    if (sh_video->codec)
+        mp_msg(MSGT_IDENTIFY, MSGL_INFO, "ID_VIDEO_CODEC=%s\n", sh_video->codec->name);
 
-  if (sh_video->codec)
-    mp_msg(MSGT_IDENTIFY, MSGL_INFO, "ID_VIDEO_CODEC=%s\n", sh_video->codec->name);
+    sh_video->last_pts = MP_NOPTS_VALUE;
+    sh_video->num_buffered_pts = 0;
+    sh_video->next_frame_time = 0;
 
-  sh_video->last_pts = MP_NOPTS_VALUE;
-  sh_video->num_buffered_pts = 0;
-  sh_video->next_frame_time = 0;
+    if(auto_quality>0){
+        // Auto quality option enabled
+        output_quality=get_video_quality_max(sh_video);
+        if(auto_quality>output_quality) auto_quality=output_quality;
+        else output_quality=auto_quality;
+        mp_msg(MSGT_CPLAYER,MSGL_V,"AutoQ: setting quality to %d.\n",output_quality);
+        set_video_quality(sh_video,output_quality);
+    }
 
-  if(auto_quality>0){
-    // Auto quality option enabled
-    output_quality=get_video_quality_max(sh_video);
-    if(auto_quality>output_quality) auto_quality=output_quality;
-    else output_quality=auto_quality;
-    mp_msg(MSGT_CPLAYER,MSGL_V,"AutoQ: setting quality to %d.\n",output_quality);
-    set_video_quality(sh_video,output_quality);
-  }
+    // ========== Init display (sh_video->disp_w*sh_video->disp_h/out_fmt) ============
 
-  // ========== Init display (sh_video->disp_w*sh_video->disp_h/out_fmt) ============
+    current_module="init_vo";
 
-  current_module="init_vo";
-
-  return 1;
+    return 1;
 
 err_out:
-  mpctx->sh_video = mpctx->d_video->sh = NULL;
-  return 0;
+    mpctx->sh_video = mpctx->d_video->sh = NULL;
+    return 0;
 }
 
 static double update_video(int *blit_frame)
@@ -2865,10 +2866,10 @@ static int seek(MPContext *mpctx, double amount, int style)
 void _demo_fill_sound(void)
 {
 	if (mpctx->sh_audio)
-    if (!fill_audio_out_buffers())
-	// at eof, all audio at least written to ao
-	if (!mpctx->sh_video)
-	    mpctx->eof = PT_NEXT_ENTRY;
+        if (!fill_audio_out_buffers())
+            // at eof, all audio at least written to ao
+            if (!mpctx->sh_video)
+                mpctx->eof = PT_NEXT_ENTRY;
 }
 
 /* This preprocessor directive is a hack to generate a mplayer-nomain.o object

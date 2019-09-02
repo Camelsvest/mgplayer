@@ -327,6 +327,7 @@ const vo_functions_t* init_best_video_out(char** vo_list){
                     if(!video_driver->preinit(vo_subdevice))
                     {
                         free(vo);
+                        mp_msg(MSGT_GLOBAL, MSGL_INFO,"line %d: video_driver:\t%s\n", __LINE__, video_driver->info->name);
                         return video_driver; // success!
                     }
                 }
@@ -342,7 +343,7 @@ const vo_functions_t* init_best_video_out(char** vo_list){
         const vo_functions_t* video_driver=video_out_drivers[i];
         if(!video_driver->preinit(vo_subdevice))
         {
-            mp_msg(MSGT_GLOBAL, MSGL_INFO,"video_driver:\t%s\n", video_driver->info->name);
+            mp_msg(MSGT_GLOBAL, MSGL_INFO,"line %d: video_driver:\t%s\n", __LINE__, video_driver->info->name);
             return video_driver; // success!
         }
     }

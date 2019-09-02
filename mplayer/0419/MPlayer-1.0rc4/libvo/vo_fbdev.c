@@ -776,12 +776,13 @@ static int fb_preinit(int reset)
     fb_preinit_done = 1;
     fb_works = 1;
     return 1;
+    
 err_out:
 /*    if (fb_tty_fd != -1)
     close(fb_tty_fd);
     fb_tty_fd = -1;*/
     if (fb_dev_fd != -1)
-    close(fb_dev_fd);
+        close(fb_dev_fd);
 	mp_msg(MSGT_VO, MSGL_INFO, "### fb_preinit close fb_dev_fd ###\n");
     fb_dev_fd = -1;
     fb_preinit_done = 1;
@@ -1392,7 +1393,7 @@ void _demo_flip_page(void)
 
 static void draw_osd(void)
 {
-///	mp_msg(MSGT_VO, MSGL_INFO, "### draw_osd ###\n");
+	mp_msg(MSGT_VO, MSGL_INFO, "### draw_osd ###\n");
 
     vo_draw_text(in_width, in_height, draw_alpha);
 }

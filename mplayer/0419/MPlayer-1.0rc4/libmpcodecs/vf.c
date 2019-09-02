@@ -718,9 +718,9 @@ vf_instance_t* append_filters(vf_instance_t* last){
     for(i = 0 ; vf_settings[i].name ; i++)
       /* NOP */;
     for(i-- ; i >= 0 ; i--) {
-      //printf("Open filter %s\n",vf_settings[i].name);
-      vf = vf_open_filter(last,vf_settings[i].name,vf_settings[i].attribs);
-      if(vf) last=vf;
+        mp_msg(MSGT_VFILTER, MSGL_STATUS, "Open filter %s\n",vf_settings[i].name);
+        vf = vf_open_filter(last,vf_settings[i].name,vf_settings[i].attribs);
+        if(vf) last=vf;
     }
   }
   return last;
