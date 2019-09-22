@@ -1336,70 +1336,70 @@ static void print_status(float a_pos, float a_v, float corr)
 
   // Audio time
   if (mpctx->sh_audio) {
-    saddf(line, &pos, width, "A:%6.1f ", a_pos);
-    if (!sh_video) {
-      float len = demuxer_get_time_length(mpctx->demuxer);
-      saddf(line, &pos, width, "(");
-      sadd_hhmmssf(line, &pos, width, a_pos);
-      saddf(line, &pos, width, ") of %.1f (", len);
-      sadd_hhmmssf(line, &pos, width, len);
-      saddf(line, &pos, width, ") ");
-    }
+      saddf(line, &pos, width, "A:%6.1f ", a_pos);
+      if (!sh_video) {
+          float len = demuxer_get_time_length(mpctx->demuxer);
+          saddf(line, &pos, width, "(");
+          sadd_hhmmssf(line, &pos, width, a_pos);
+          saddf(line, &pos, width, ") of %.1f (", len);
+          sadd_hhmmssf(line, &pos, width, len);
+          saddf(line, &pos, width, ") ");
+      }
   }
 
   // Video time
   if (sh_video)
-    saddf(line, &pos, width, "V:%6.1f ", sh_video->pts);
+      saddf(line, &pos, width, "V:%6.1f ", sh_video->pts);
 
   // A-V sync
   if (mpctx->sh_audio && sh_video)
-    saddf(line, &pos, width, "A-V:%7.3f ct:%7.3f ", a_v, corr);
+      saddf(line, &pos, width, "A-V:%7.3f ct:%7.3f ", a_v, corr);
 
   // Video stats
   if (sh_video)
-    saddf(line, &pos, width, "%3d/%3d ",
-      (int)sh_video->num_frames,
-      (int)sh_video->num_frames_decoded);
+      saddf(line, &pos, width, "%3d/%3d ",
+            (int)sh_video->num_frames,
+            (int)sh_video->num_frames_decoded);
 
   // CPU usage
   if (sh_video) {
-    if (sh_video->timer > 0.5)
-      saddf(line, &pos, width, "%2d%% %2d%% %4.1f%% ",
-        (int)(100.0*video_time_usage*playback_speed/(double)sh_video->timer),
-        (int)(100.0*vout_time_usage*playback_speed/(double)sh_video->timer),
-        (100.0*audio_time_usage*playback_speed/(double)sh_video->timer));
+      if (sh_video->timer > 0.5)
+          saddf(line, &pos, width, "%2d%% %2d%% %4.1f%% ",
+                (int)(100.0*video_time_usage*playback_speed/(double)sh_video->timer),
+                (int)(100.0*vout_time_usage*playback_speed/(double)sh_video->timer),
+                (100.0*audio_time_usage*playback_speed/(double)sh_video->timer));
     else
-      saddf(line, &pos, width, "??%% ??%% ??,?%% ");
+        saddf(line, &pos, width, "??%% ??%% ??,?%% ");
   } else if (mpctx->sh_audio) {
-    if (mpctx->delay > 0.5)
-      saddf(line, &pos, width, "%4.1f%% ",
-        100.0*audio_time_usage/(double)mpctx->delay);
+      if (mpctx->delay > 0.5)
+          saddf(line, &pos, width, "%4.1f%% ",
+                100.0*audio_time_usage/(double)mpctx->delay);
     else
-      saddf(line, &pos, width, "??,?%% ");
+        saddf(line, &pos, width, "??,?%% ");
   }
 
   // VO stats
   if (sh_video)
-    saddf(line, &pos, width, "%d %d ", drop_frame_cnt, output_quality);
+      saddf(line, &pos, width, "%d %d ", drop_frame_cnt, output_quality);
 
 #ifdef CONFIG_STREAM_CACHE
   // cache stats
   if (stream_cache_size > 0)
-    saddf(line, &pos, width, "%d%% ", cache_fill_status);
+      saddf(line, &pos, width, "%d%% ", cache_fill_status);
 #endif
 
   // other
   if (playback_speed != 1)
-    saddf(line, &pos, width, "%4.2fx ", playback_speed);
+      saddf(line, &pos, width, "%4.2fx ", playback_speed);
 
   // end
   if (erase_to_end_of_line) {
-    line[pos] = 0;
-    mp_msg(MSGT_STATUSLINE, MSGL_STATUS, "%s%s\r", line, erase_to_end_of_line);
+      line[pos] = 0;
+      mp_msg(MSGT_STATUSLINE, MSGL_STATUS, "%s%s\r", line, erase_to_end_of_line);
   } else {
-    memset(&line[pos], ' ', width - pos);
-    line[width] = 0;
-    mp_msg(MSGT_STATUSLINE, MSGL_STATUS, "%s\r", line);
+      memset(&line[pos], ' ', width - pos);
+      line[width] = 0;
+      mp_msg(MSGT_STATUSLINE, MSGL_STATUS, "%s\r", line);
   }
   free(line);
 }

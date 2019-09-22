@@ -3023,250 +3023,254 @@ static int decode_nal_units(H264Context *h, const uint8_t *buf, int buf_size){
 	{
 		if ( s_flag )
 		{
-		g_vde.tDecParam.u32Pkt_size = g_vde2.decParam.chunkSize;
+            g_vde.tDecParam.u32Pkt_size = g_vde2.decParam.chunkSize;
 
-		if ( g_vde2.prevDispIdx == 0 )
-		{
-			g_vde2.prevDispIdx = 1;
-			g_vde2.virtualY = g_vde.tDecParam.pu8Display_addr[0] = g_vde.outputbuf.addr;
-			g_vde.tDecParam.pu8Display_addr[1] = g_vde.tDecParam.pu8Display_addr[0] + (g_swidth*g_sheight);
-			g_vde.tDecParam.pu8Display_addr[2] = g_vde.tDecParam.pu8Display_addr[1] + (g_swidth*g_sheight/4);
-		}
-		else
-		{
-			g_vde2.prevDispIdx = 0;
-			g_vde2.virtualY = g_vde.tDecParam.pu8Display_addr[0] = g_vde.outputbuf.addr + (g_vde.outputbuf.size/2);
-			g_vde.tDecParam.pu8Display_addr[1] = g_vde.tDecParam.pu8Display_addr[0] + (g_swidth*g_sheight);
-			g_vde.tDecParam.pu8Display_addr[2] = g_vde.tDecParam.pu8Display_addr[1] + (g_swidth*g_sheight/4);
-		}
+            if ( g_vde2.prevDispIdx == 0 )
+            {
+                g_vde2.prevDispIdx = 1;
+                g_vde2.virtualY = g_vde.tDecParam.pu8Display_addr[0] = g_vde.outputbuf.addr;
+                g_vde.tDecParam.pu8Display_addr[1] = g_vde.tDecParam.pu8Display_addr[0] + (g_swidth*g_sheight);
+                g_vde.tDecParam.pu8Display_addr[2] = g_vde.tDecParam.pu8Display_addr[1] + (g_swidth*g_sheight/4);
+            }
+            else
+            {
+                g_vde2.prevDispIdx = 0;
+                g_vde2.virtualY = g_vde.tDecParam.pu8Display_addr[0] = g_vde.outputbuf.addr + (g_vde.outputbuf.size/2);
+                g_vde.tDecParam.pu8Display_addr[1] = g_vde.tDecParam.pu8Display_addr[0] + (g_swidth*g_sheight);
+                g_vde.tDecParam.pu8Display_addr[2] = g_vde.tDecParam.pu8Display_addr[1] + (g_swidth*g_sheight/4);
+            }
+            
+            if ( (g_vde2.ret = ioctl( g_vde.vde_fd, FAVC_IOCTL_DECODE_FRAME, &g_vde.tDecParam )) != 0 )
+            {
+                av_log( avctx, AV_LOG_INFO, "### FAVC_IOCTL_DECODE_FRAME: Failed. ret=%x ###\n", g_vde2.ret );
+                return -1;
+            }
 
-		if ( (g_vde2.ret = ioctl( g_vde.vde_fd, FAVC_IOCTL_DECODE_FRAME, &g_vde.tDecParam )) != 0 )
-		{
-		av_log( avctx, AV_LOG_INFO, "### FAVC_IOCTL_DECODE_FRAME: Failed. ret=%x ###\n", g_vde2.ret );
-		return -1;
-		}
-
-		g_vde2.framebufWidth = g_vde.tDecParam.tResult.u32Width;
-		g_vde2.framebufHeight = g_vde.tDecParam.tResult.u32Height;
-
-		if ( g_vpe.wait_complete )
-			_demo_flip_page();
-
+            g_vde2.framebufWidth = g_vde.tDecParam.tResult.u32Width;
+            g_vde2.framebufHeight = g_vde.tDecParam.tResult.u32Height;
+            
+            if ( g_vpe.wait_complete )
+                _demo_flip_page();
+            
 ///		av_log( avctx, AV_LOG_INFO,"### OK????? ###\n");
 ///		while(1);
 ///		goto frame_end;
-		g_vde2.decParam.chunkSize = 0;
-		g_vde.pVBitStreamBuffer = g_vde.pVBitStartBuffer;
+            g_vde2.decParam.chunkSize = 0;
+            g_vde.pVBitStreamBuffer = g_vde.pVBitStartBuffer;
 
 ///		d = g_vpe.center + fb_line_len * y + fb_pixel_size * x;
-		g_vpe.PAT_WIDTH = g_swidth;
-		g_vpe.PAT_HEIGHT = g_sheight;
-		g_vpe.total_x = g_vde2.framebufWidth;
-		g_vpe.total_y = g_vde2.framebufHeight;
+            g_vpe.PAT_WIDTH = g_swidth;
+            g_vpe.PAT_HEIGHT = g_sheight;
+            g_vpe.total_x = g_vde2.framebufWidth;
+            g_vpe.total_y = g_vde2.framebufHeight;
 ///		av_log( avctx, AV_LOG_INFO, "### height = %d, width = %d ###\n", g_vpe.PAT_HEIGHT, g_vpe.PAT_WIDTH );
 ///		av_log( avctx, AV_LOG_INFO, "### g_vde2.initialInfo.picWidth = %d, g_vde2.initialInfo.picHeight = %d ###\n", g_vde2.initialInfo.picWidth, g_vde2.initialInfo.picHeight );
 ///		av_log( avctx, AV_LOG_INFO, "### g_vpe.PAT_WIDTH = %d, g_vpe.PAT_HEIGHT = %d, g_vpe.total_x = %d, g_vpe.total_y = %d, s->width = %d, s->height = %d ###\n", g_vpe.PAT_WIDTH, g_vpe.PAT_HEIGHT, g_vpe.total_x, g_vpe.total_y, s->width, s->height );
-		g_vpe.ptr_y = g_vde2.virtualY;
-		g_vpe.ptr_u = g_vpe.ptr_y+g_vpe.total_x*g_vpe.total_y;		/* Planar YUV420 */
-		g_vpe.ptr_v = g_vpe.ptr_u+g_vpe.total_x*g_vpe.total_y/4;
+            g_vpe.ptr_y = g_vde2.virtualY;
+            g_vpe.ptr_u = g_vpe.ptr_y+g_vpe.total_x*g_vpe.total_y;		/* Planar YUV420 */
+            g_vpe.ptr_v = g_vpe.ptr_u+g_vpe.total_x*g_vpe.total_y/4;
+            
+            g_vpe.vpe_setting.src_addrPacY = g_vpe.ptr_y;				/* Planar YUV420 */
+            g_vpe.vpe_setting.src_addrU = g_vpe.ptr_u;
+            g_vpe.vpe_setting.src_addrV = g_vpe.ptr_v;
+            g_vpe.vpe_setting.src_format = VPE_SRC_PLANAR_YUV420;
+            g_vpe.vpe_setting.src_width = g_vpe.PAT_WIDTH;
+            g_vpe.vpe_setting.src_height = g_vpe.PAT_HEIGHT;
 
-		g_vpe.vpe_setting.src_addrPacY = g_vpe.ptr_y;				/* Planar YUV420 */
-		g_vpe.vpe_setting.src_addrU = g_vpe.ptr_u;
-		g_vpe.vpe_setting.src_addrV = g_vpe.ptr_v;
-		g_vpe.vpe_setting.src_format = VPE_SRC_PLANAR_YUV420;
-		g_vpe.vpe_setting.src_width = g_vpe.PAT_WIDTH;
-		g_vpe.vpe_setting.src_height = g_vpe.PAT_HEIGHT;
+            g_vpe.vpe_setting.src_leftoffset = 0;
+            g_vpe.vpe_setting.src_rightoffset = 0;
 
-		g_vpe.vpe_setting.src_leftoffset = 0;
-		g_vpe.vpe_setting.src_rightoffset = 0;
+            if ( g_vpe.current_rotate_type != vendor_rotate_type )
+            {
+                g_vpe.current_rotate_type = vendor_rotate_type;	//0: normal, 1: right 90 degree, 2: left 90 degree, 3: 180 degree
+                g_vpe.is_init = 0;
+            }
 
-		if ( g_vpe.current_rotate_type != vendor_rotate_type )
-		{
-			g_vpe.current_rotate_type = vendor_rotate_type;	//0: normal, 1: right 90 degree, 2: left 90 degree, 3: 180 degree
-			g_vpe.is_init = 0;
-		}
+            if ( g_vpe.current_scale_type != vendor_scale_type )
+            {
+                g_vpe.current_scale_type = vendor_scale_type;	//-1: non-proportional, 1: proportional
+                g_vpe.is_init = 0;
+            }
 
-		if ( g_vpe.current_scale_type != vendor_scale_type )
-		{
-			g_vpe.current_scale_type = vendor_scale_type;	//-1: non-proportional, 1: proportional
-			g_vpe.is_init = 0;
-		}
+            if ( g_vpe.is_init == 0 )
+            {
+                g_vpe.is_init = 1;
+            
+                g_vpe.vpe_setting.dest_width = g_vpe.vpe_setting.src_width;
+                g_vpe.vpe_setting.dest_height = g_vpe.vpe_setting.src_height;
+                
+                if ( (vendor_rotate_type <= 0) || (vendor_rotate_type == 3) )
+                {
+                    temp_lcm_width = g_vpe.lcm_width;
+                    temp_lcm_height = g_vpe.lcm_height;
+                }
+                else if ( (vendor_rotate_type == 1) || (vendor_rotate_type == 2) )
+                {
+                    temp_lcm_width = g_vpe.lcm_height;
+                    temp_lcm_height = g_vpe.lcm_width;
+                }
+                
+                if ( (g_vpe.vpe_setting.src_width > temp_lcm_width) || (g_vpe.vpe_setting.src_height > temp_lcm_height) )
+                {
+                    factor_w = (float)temp_lcm_width / (float)g_vpe.vpe_setting.src_width;
+                    factor_h = (float)temp_lcm_height / (float)g_vpe.vpe_setting.src_height;
+                    if ( factor_w <= factor_h )
+                    {
+                        if ( vendor_scale_type <= 0 )	// default case
+                        {
+                            g_vpe.vpe_setting.dest_width = temp_lcm_width;
+                            if ( g_vpe.vpe_setting.src_height >= temp_lcm_height )
+                            {
+                                g_vpe.vpe_setting.dest_height = temp_lcm_height;
+                            }
+                            else
+                            {
+                                g_vpe.vpe_setting.dest_height = g_vpe.vpe_setting.src_height;
+                            }
+                        }
+                        else if ( vendor_scale_type == 1 )	// case 1
+                        {
+                            g_vpe.vpe_setting.dest_width = g_vpe.vpe_setting.src_width * factor_w;
+                            g_vpe.vpe_setting.dest_height = g_vpe.vpe_setting.src_height * factor_w;
+                        }
+                    }
+                    else
+                    {
+                        if ( vendor_scale_type <= 0 )	// default case
+                        {
+                            g_vpe.vpe_setting.dest_height = temp_lcm_height;
+                            if ( g_vpe.vpe_setting.src_width >= temp_lcm_width )
+                            {
+                                g_vpe.vpe_setting.dest_width = temp_lcm_width;
+                            }
+                            else
+                            {
+                                g_vpe.vpe_setting.dest_width = g_vpe.vpe_setting.src_width;
+                            }
+                        }
+                        else if ( vendor_scale_type == 1 )	// case 1
+                        {
+                            g_vpe.vpe_setting.dest_width = g_vpe.vpe_setting.src_width * factor_h;
+                            g_vpe.vpe_setting.dest_height = g_vpe.vpe_setting.src_height * factor_h;
+                        }
+                    }
+                }
 
-		if ( g_vpe.is_init == 0 )
-		{
-			g_vpe.is_init = 1;
+                // customized by Sean Zhang
+                g_vpe.vpe_setting.dest_width = g_vpe.vpe_setting.dest_width/2;
+                g_vpe.vpe_setting.dest_height= g_vpe.vpe_setting.dest_height/2;
+                
+                if ( g_vpe.lcm_bits_per_pixel == 16 )
+                {
+                    if ( vendor_color_type <= 0 )	// default case
+                        g_vpe.vpe_setting.dest_format = VPE_DST_PACKET_RGB565;
+                    else
+                        g_vpe.vpe_setting.dest_format = VPE_DST_PACKET_YUV422;
+                    
+                    if ( (vendor_rotate_type == 1) || (vendor_rotate_type == 2) )
+                        g_vpe.offset0 = ((g_vpe.lcm_height - g_vpe.vpe_setting.dest_width) >> 1) * g_vpe.lcm_width * 2;
+                    else
+                    {
+                        if ( vendor_dy <= -1 )
+                            g_vpe.offset0 = ((g_vpe.lcm_height - g_vpe.vpe_setting.dest_height) >> 1) * g_vpe.lcm_width * 2;
+                        else
+                        {
+                            if ( g_vpe.vpe_setting.dest_height != 0 )
+                            {
+                                if ( vendor_dy > (g_vpe.lcm_height - g_vpe.vpe_setting.dest_height) )
+                                    vendor_dy = g_vpe.lcm_height - g_vpe.vpe_setting.dest_height;
+                                g_vpe.offset0 = vendor_dy * g_vpe.lcm_width * 2;
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    g_vpe.vpe_setting.dest_format = VPE_DST_PACKET_RGB888;
+                
+                    if ( (vendor_rotate_type == 1) || (vendor_rotate_type == 2) )
+                        g_vpe.offset0 = ((g_vpe.lcm_height - g_vpe.vpe_setting.dest_width) >> 1) * g_vpe.lcm_width * 4;
+                    else
+                        g_vpe.offset0 = ((g_vpe.lcm_height - g_vpe.vpe_setting.dest_height) >> 1) * g_vpe.lcm_width * 4;
+                }
+                
+                g_vpe.vpe_setting.algorithm = VPE_SCALE_DDA;
+                if ( vendor_rotate_type == 1 )
+                {
+                    temp1 = g_vpe.lcm_width - g_vpe.vpe_setting.dest_height;
+                    g_vpe.vpe_setting.rotation = VPE_OP_RIGHT;
+                }
+                else if ( vendor_rotate_type == 2 )
+                {
+                    temp1 = g_vpe.lcm_width - g_vpe.vpe_setting.dest_height;
+                    g_vpe.vpe_setting.rotation = VPE_OP_LEFT;
+                }
+                else if ( vendor_rotate_type == 3 )
+                {
+                    temp1 = g_vpe.lcm_width - g_vpe.vpe_setting.dest_width;
+                    g_vpe.vpe_setting.rotation = VPE_OP_UPSIDEDOWN;
+                }
+                else
+                {
+                    temp1 = g_vpe.lcm_width - g_vpe.vpe_setting.dest_width;
+                    g_vpe.vpe_setting.rotation = VPE_OP_NORMAL;
+                }
 
-			g_vpe.vpe_setting.dest_width = g_vpe.vpe_setting.src_width;
-			g_vpe.vpe_setting.dest_height = g_vpe.vpe_setting.src_height;
-
-			if ( (vendor_rotate_type <= 0) || (vendor_rotate_type == 3) )
-			{
-				temp_lcm_width = g_vpe.lcm_width;
-				temp_lcm_height = g_vpe.lcm_height;
-			}
-			else if ( (vendor_rotate_type == 1) || (vendor_rotate_type == 2) )
-			{
-				temp_lcm_width = g_vpe.lcm_height;
-				temp_lcm_height = g_vpe.lcm_width;
-			}
-			
-			if ( (g_vpe.vpe_setting.src_width > temp_lcm_width) || (g_vpe.vpe_setting.src_height > temp_lcm_height) )
-			{
-				factor_w = (float)temp_lcm_width / (float)g_vpe.vpe_setting.src_width;
-				factor_h = (float)temp_lcm_height / (float)g_vpe.vpe_setting.src_height;
-				if ( factor_w <= factor_h )
-				{
-					if ( vendor_scale_type <= 0 )	// default case
-					{
-						g_vpe.vpe_setting.dest_width = temp_lcm_width;
-						if ( g_vpe.vpe_setting.src_height >= temp_lcm_height )
-						{
-							g_vpe.vpe_setting.dest_height = temp_lcm_height;
-						}
-						else
-						{
-							g_vpe.vpe_setting.dest_height = g_vpe.vpe_setting.src_height;
-						}
-					}
-					else if ( vendor_scale_type == 1 )	// case 1
-					{
-						g_vpe.vpe_setting.dest_width = g_vpe.vpe_setting.src_width * factor_w;
-						g_vpe.vpe_setting.dest_height = g_vpe.vpe_setting.src_height * factor_w;
-					}
-				}
-				else
-				{
-					if ( vendor_scale_type <= 0 )	// default case
-					{
-						g_vpe.vpe_setting.dest_height = temp_lcm_height;
-						if ( g_vpe.vpe_setting.src_width >= temp_lcm_width )
-						{
-							g_vpe.vpe_setting.dest_width = temp_lcm_width;
-						}
-						else
-						{
-							g_vpe.vpe_setting.dest_width = g_vpe.vpe_setting.src_width;
-						}
-					}
-					else if ( vendor_scale_type == 1 )	// case 1
-					{
-						g_vpe.vpe_setting.dest_width = g_vpe.vpe_setting.src_width * factor_h;
-						g_vpe.vpe_setting.dest_height = g_vpe.vpe_setting.src_height * factor_h;
-					}
-				}
-			}
-
-			if ( g_vpe.lcm_bits_per_pixel == 16 )
-			{
-				if ( vendor_color_type <= 0 )	// default case
-					g_vpe.vpe_setting.dest_format = VPE_DST_PACKET_RGB565;
-				else
-					g_vpe.vpe_setting.dest_format = VPE_DST_PACKET_YUV422;
-
-				if ( (vendor_rotate_type == 1) || (vendor_rotate_type == 2) )
-					g_vpe.offset0 = ((g_vpe.lcm_height - g_vpe.vpe_setting.dest_width) >> 1) * g_vpe.lcm_width * 2;
-				else
-				{
-					if ( vendor_dy <= -1 )
-						g_vpe.offset0 = ((g_vpe.lcm_height - g_vpe.vpe_setting.dest_height) >> 1) * g_vpe.lcm_width * 2;
-					else
-					{
-						if ( g_vpe.vpe_setting.dest_height != 0 )
-						{
-						if ( vendor_dy > (g_vpe.lcm_height - g_vpe.vpe_setting.dest_height) )
-							vendor_dy = g_vpe.lcm_height - g_vpe.vpe_setting.dest_height;
-						g_vpe.offset0 = vendor_dy * g_vpe.lcm_width * 2;
-						}
-					}
-				}
-			}
-			else
-			{
-				g_vpe.vpe_setting.dest_format = VPE_DST_PACKET_RGB888;
-
-				if ( (vendor_rotate_type == 1) || (vendor_rotate_type == 2) )
-					g_vpe.offset0 = ((g_vpe.lcm_height - g_vpe.vpe_setting.dest_width) >> 1) * g_vpe.lcm_width * 4;
-				else
-					g_vpe.offset0 = ((g_vpe.lcm_height - g_vpe.vpe_setting.dest_height) >> 1) * g_vpe.lcm_width * 4;
-			}
-
-			g_vpe.vpe_setting.algorithm = VPE_SCALE_DDA;
-			if ( vendor_rotate_type == 1 )
-			{
-				temp1 = g_vpe.lcm_width - g_vpe.vpe_setting.dest_height;
-				g_vpe.vpe_setting.rotation = VPE_OP_RIGHT;
-			}
-			else if ( vendor_rotate_type == 2 )
-			{
-				temp1 = g_vpe.lcm_width - g_vpe.vpe_setting.dest_height;
-				g_vpe.vpe_setting.rotation = VPE_OP_LEFT;
-			}
-			else if ( vendor_rotate_type == 3 )
-			{
-				temp1 = g_vpe.lcm_width - g_vpe.vpe_setting.dest_width;
-				g_vpe.vpe_setting.rotation = VPE_OP_UPSIDEDOWN;
-			}
-			else
-			{
-				temp1 = g_vpe.lcm_width - g_vpe.vpe_setting.dest_width;
-				g_vpe.vpe_setting.rotation = VPE_OP_NORMAL;
-			}
-
-			if ( vendor_dx <= -1 )
-			{
-				g_vpe.vpe_setting.dest_leftoffset = (temp1 + 1) >> 1;
-				g_vpe.vpe_setting.dest_rightoffset = temp1 >> 1;
-			}
-			else
-			{
-				if ( g_vpe.vpe_setting.dest_width != 0 )
-				{
-				if ( (vendor_dx + g_vpe.vpe_setting.dest_width) > g_vpe.lcm_width )
-					vendor_dx = g_vpe.lcm_width - g_vpe.vpe_setting.dest_width;
-				g_vpe.vpe_setting.dest_leftoffset = vendor_dx;
-				g_vpe.vpe_setting.dest_rightoffset = g_vpe.lcm_width - vendor_dx - g_vpe.vpe_setting.dest_width;
-				}
-			}
+                if ( vendor_dx <= -1 )
+                {
+                    g_vpe.vpe_setting.dest_leftoffset = (temp1 + 1) >> 1;
+                    g_vpe.vpe_setting.dest_rightoffset = temp1 >> 1;
+                }
+                else
+                {
+                    if ( g_vpe.vpe_setting.dest_width != 0 )
+                    {
+                        if ( (vendor_dx + g_vpe.vpe_setting.dest_width) > g_vpe.lcm_width )
+                            vendor_dx = g_vpe.lcm_width - g_vpe.vpe_setting.dest_width;
+                        g_vpe.vpe_setting.dest_leftoffset = vendor_dx;
+                        g_vpe.vpe_setting.dest_rightoffset = g_vpe.lcm_width - vendor_dx - g_vpe.vpe_setting.dest_width;
+                    }
+                }
 
 ///			g_vpe.wait_complete = 1;
-		}
+            }
 
-		g_vpe.vpe_setting.dest_addrPac = (unsigned int)g_vpe.center + g_vpe.offset0;
-
-		if((ioctl(g_vpe.vpe_fd, VPE_SET_FORMAT_TRANSFORM, &g_vpe.vpe_setting)) < 0)
-		{
-			close(g_vpe.vpe_fd);
-			av_log( avctx, AV_LOG_INFO, "### VPE_IO_GET fail ###\n" );
-		}
+            g_vpe.vpe_setting.dest_addrPac = (unsigned int)g_vpe.center + g_vpe.offset0;
+            
+            if((ioctl(g_vpe.vpe_fd, VPE_SET_FORMAT_TRANSFORM, &g_vpe.vpe_setting)) < 0)
+            {
+                close(g_vpe.vpe_fd);
+                av_log( avctx, AV_LOG_INFO, "### VPE_IO_GET fail ###\n" );
+            }
 #ifdef CONFIG_VENDOR_OSD
-		if ( g_vpe.wait_complete && (vendor_rotate_type > 0) )
-			ioctl( g_osddemo.vpost_fd, IOCTL_WAIT_VSYNC );
+            if ( g_vpe.wait_complete && (vendor_rotate_type > 0) )
+                ioctl( g_osddemo.vpost_fd, IOCTL_WAIT_VSYNC );
 #endif
-		if ( vendor_framedrop == 0 )
-		{
-		if((ioctl(g_vpe.vpe_fd, VPE_TRIGGER, NULL)) < 0)
-		{
-			close(g_vpe.vpe_fd);
-			av_log( avctx, AV_LOG_INFO, "### VPE_TRIGGER info fail ###\n" );
-		}
+            if ( vendor_framedrop == 0 )
+            {
+                if((ioctl(g_vpe.vpe_fd, VPE_TRIGGER, NULL)) < 0)
+                {
+                    close(g_vpe.vpe_fd);
+                    av_log( avctx, AV_LOG_INFO, "### VPE_TRIGGER info fail ###\n" );
+                }
 ///		g_vpe.wait_complete = 0;
 ///		ioctl(g_vpe.vpe_fd, VPE_WAIT_INTERRUPT, &g_value);
-		g_vpe.wait_complete = 1;
-		}
-		else
-		{
-			if ( vendor_framedrop1 == 0 )
-			{
-				if((ioctl(g_vpe.vpe_fd, VPE_TRIGGER, NULL)) < 0)
-				{
-					close(g_vpe.vpe_fd);
-					av_log( avctx, AV_LOG_INFO, "### VPE_TRIGGER info fail ###\n" );
-				}
-				g_vpe.wait_complete = 1;
-			}
-			else
-				g_vpe.wait_complete = 0;
-		}
+                g_vpe.wait_complete = 1;
+            }
+            else
+            {
+                if ( vendor_framedrop1 == 0 )
+                {
+                    if((ioctl(g_vpe.vpe_fd, VPE_TRIGGER, NULL)) < 0)
+                    {
+                        close(g_vpe.vpe_fd);
+                        av_log( avctx, AV_LOG_INFO, "### VPE_TRIGGER info fail ###\n" );
+                    }
+                    g_vpe.wait_complete = 1;
+                }
+                else
+                    g_vpe.wait_complete = 0;
+            }
 ///		av_log( avctx, AV_LOG_INFO, "### 3 g_vpe.wait_complete = %d ###\n", g_vpe.wait_complete );
 		}
 	}

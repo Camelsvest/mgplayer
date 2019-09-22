@@ -1123,28 +1123,28 @@ static int vo_update_osd_ext(int dxs,int dys, int left_border, int top_border,
 	|| ((dys != vo_image_height)
 	    && (subtitle_autoscale == 1 || subtitle_autoscale == 3)))
     {
-	// screen dimensions changed
-	// wait a while to avoid useless reloading of the font
-	if (dxs == prev_dxs || dys == prev_dys) {
-	    defer_counter++;
-	} else {
-	    prev_dxs = dxs;
-	    prev_dys = dys;
-	    defer_counter = 0;
-	}
-	if (defer_counter >= FONT_LOAD_DEFER) force_load_font = 1;
+        // screen dimensions changed
+        // wait a while to avoid useless reloading of the font
+        if (dxs == prev_dxs || dys == prev_dys) {
+            defer_counter++;
+        } else {
+            prev_dxs = dxs;
+            prev_dys = dys;
+            defer_counter = 0;
+        }
+        if (defer_counter >= FONT_LOAD_DEFER) force_load_font = 1;
     }
 
     if (force_load_font) {
-	force_load_font = 0;
+        force_load_font = 0;
         load_font_ft(dxs, dys, &vo_font, font_name, osd_font_scale_factor);
-	if (sub_font_name)
-	    load_font_ft(dxs, dys, &sub_font, sub_font_name, text_font_scale_factor);
-	else
-	    load_font_ft(dxs, dys, &sub_font, font_name, text_font_scale_factor);
-	prev_dxs = dxs;
-	prev_dys = dys;
-	defer_counter = 0;
+        if (sub_font_name)
+            load_font_ft(dxs, dys, &sub_font, sub_font_name, text_font_scale_factor);
+        else
+            load_font_ft(dxs, dys, &sub_font, font_name, text_font_scale_factor);
+        prev_dxs = dxs;
+        prev_dys = dys;
+        defer_counter = 0;
     } else {
        if (!vo_font)
            load_font_ft(dxs, dys, &vo_font, font_name, osd_font_scale_factor);
@@ -1158,70 +1158,70 @@ static int vo_update_osd_ext(int dxs,int dys, int left_border, int top_border,
 #endif
 
     while(obj){
-      if(dxs!=obj->dxs || dys!=obj->dys || obj->flags&OSDFLAG_FORCE_UPDATE){
-        int vis=obj->flags&OSDFLAG_VISIBLE;
-	obj->flags&=~OSDFLAG_BBOX;
-	switch(obj->type){
+        if(dxs!=obj->dxs || dys!=obj->dys || obj->flags&OSDFLAG_FORCE_UPDATE){
+            int vis=obj->flags&OSDFLAG_VISIBLE;
+            obj->flags&=~OSDFLAG_BBOX;
+            switch(obj->type){
 #ifdef CONFIG_DVDNAV
-        case OSDTYPE_DVDNAV:
-           vo_update_nav(obj,dxs,dys, left_border, top_border, right_border, bottom_border, orig_w, orig_h);
-           break;
+            case OSDTYPE_DVDNAV:
+                vo_update_nav(obj,dxs,dys, left_border, top_border, right_border, bottom_border, orig_w, orig_h);
+                break;
 #endif
-	case OSDTYPE_SUBTITLE:
-	    vo_update_text_sub(obj,dxs,dys);
-	    break;
-	case OSDTYPE_TELETEXT:
-	    vo_update_text_teletext(obj,dxs,dys);
-	    break;
-	case OSDTYPE_PROGBAR:
-	    vo_update_text_progbar(obj,dxs,dys);
-	    break;
-	case OSDTYPE_SPU:
-	    if(sub_visibility && vo_spudec && spudec_visible(vo_spudec)){
-	        vo_update_spudec_sub(obj, dxs, dys);
-		obj->flags|=OSDFLAG_VISIBLE|OSDFLAG_CHANGED;
-	    }
-	    else
-		obj->flags&=~OSDFLAG_VISIBLE;
-	    break;
-	case OSDTYPE_OSD:
-	    if(vo_font && vo_osd_text && vo_osd_text[0]){
-		vo_update_text_osd(obj,dxs,dys); // update bbox
-		obj->flags|=OSDFLAG_VISIBLE|OSDFLAG_CHANGED;
-	    } else
-		obj->flags&=~OSDFLAG_VISIBLE;
-	    break;
-	}
-	// check bbox:
-	if(!(obj->flags&OSDFLAG_BBOX)){
-	    // we don't know, so assume the whole screen changed :(
-	    obj->bbox.x1=obj->bbox.y1=0;
-	    obj->bbox.x2=dxs;
-	    obj->bbox.y2=dys;
-	    obj->flags|=OSDFLAG_BBOX;
-	} else {
-	    // check bbox, reduce it if it's out of bounds (corners):
-	    if(obj->bbox.x1<0) obj->bbox.x1=0;
-	    if(obj->bbox.y1<0) obj->bbox.y1=0;
-	    if(obj->bbox.x2>dxs) obj->bbox.x2=dxs;
-	    if(obj->bbox.y2>dys) obj->bbox.y2=dys;
-	    if(obj->flags&OSDFLAG_VISIBLE)
-	    // debug:
-	    mp_msg(MSGT_OSD,MSGL_DBG2,"OSD update: %d;%d %dx%d  \n",
-		obj->bbox.x1,obj->bbox.y1,obj->bbox.x2-obj->bbox.x1,
-		obj->bbox.y2-obj->bbox.y1);
-	}
-	// check if visibility changed:
-	if(vis != (obj->flags&OSDFLAG_VISIBLE) ) obj->flags|=OSDFLAG_CHANGED;
-	// remove the cause of automatic update:
-	obj->dxs=dxs; obj->dys=dys;
-	obj->flags&=~OSDFLAG_FORCE_UPDATE;
-      }
-      if(obj->flags&OSDFLAG_CHANGED){
-        chg|=1<<obj->type;
-	mp_msg(MSGT_OSD,MSGL_DBG2,"OSD chg: %d  V: %s  pb:%d  \n",obj->type,(obj->flags&OSDFLAG_VISIBLE)?"yes":"no",vo_osd_progbar_type);
-      }
-      obj=obj->next;
+            case OSDTYPE_SUBTITLE:
+                vo_update_text_sub(obj,dxs,dys);
+                break;
+            case OSDTYPE_TELETEXT:
+                vo_update_text_teletext(obj,dxs,dys);
+                break;
+            case OSDTYPE_PROGBAR:
+                vo_update_text_progbar(obj,dxs,dys);
+                break;
+            case OSDTYPE_SPU:
+                if(sub_visibility && vo_spudec && spudec_visible(vo_spudec)){
+                    vo_update_spudec_sub(obj, dxs, dys);
+                    obj->flags|=OSDFLAG_VISIBLE|OSDFLAG_CHANGED;
+                }
+                else
+                    obj->flags&=~OSDFLAG_VISIBLE;
+                break;
+            case OSDTYPE_OSD:
+                if(vo_font && vo_osd_text && vo_osd_text[0]){
+                    vo_update_text_osd(obj,dxs,dys); // update bbox
+                    obj->flags|=OSDFLAG_VISIBLE|OSDFLAG_CHANGED;
+                } else
+                    obj->flags&=~OSDFLAG_VISIBLE;
+                break;
+            }
+            // check bbox:
+            if(!(obj->flags&OSDFLAG_BBOX)){
+                // we don't know, so assume the whole screen changed :(
+                obj->bbox.x1=obj->bbox.y1=0;
+                obj->bbox.x2=dxs;
+                obj->bbox.y2=dys;
+                obj->flags|=OSDFLAG_BBOX;
+            } else {
+                // check bbox, reduce it if it's out of bounds (corners):
+                if(obj->bbox.x1<0) obj->bbox.x1=0;
+                if(obj->bbox.y1<0) obj->bbox.y1=0;
+                if(obj->bbox.x2>dxs) obj->bbox.x2=dxs;
+                if(obj->bbox.y2>dys) obj->bbox.y2=dys;
+                if(obj->flags&OSDFLAG_VISIBLE)
+                    // debug:
+                    mp_msg(MSGT_OSD,MSGL_DBG2,"OSD update: %d;%d %dx%d  \n",
+                           obj->bbox.x1,obj->bbox.y1,obj->bbox.x2-obj->bbox.x1,
+                           obj->bbox.y2-obj->bbox.y1);
+            }
+            // check if visibility changed:
+            if(vis != (obj->flags&OSDFLAG_VISIBLE) ) obj->flags|=OSDFLAG_CHANGED;
+            // remove the cause of automatic update:
+            obj->dxs=dxs; obj->dys=dys;
+            obj->flags&=~OSDFLAG_FORCE_UPDATE;
+        }
+        if(obj->flags&OSDFLAG_CHANGED){
+            chg|=1<<obj->type;
+            mp_msg(MSGT_OSD,MSGL_DBG2,"OSD chg: %d  V: %s  pb:%d  \n",obj->type,(obj->flags&OSDFLAG_VISIBLE)?"yes":"no",vo_osd_progbar_type);
+        }
+        obj=obj->next;
     }
     return chg;
 }
@@ -1232,8 +1232,8 @@ int vo_update_osd(int dxs, int dys) {
 
 void vo_init_osd(void){
     if(!draw_alpha_init_flag){
-	draw_alpha_init_flag=1;
-	vo_draw_alpha_init();
+        draw_alpha_init_flag=1;
+        vo_draw_alpha_init();
     }
     if(vo_osd_list) free_osd_list();
     // temp hack, should be moved to mplayer/mencoder later
@@ -1256,17 +1256,17 @@ void vo_remove_text(int dxs,int dys,void (*remove)(int x0,int y0, int w,int h)){
     mp_osd_obj_t* obj=vo_osd_list;
     vo_update_osd(dxs,dys);
     while(obj){
-      if(((obj->flags&OSDFLAG_CHANGED) || (obj->flags&OSDFLAG_VISIBLE)) &&
-         (obj->flags&OSDFLAG_OLD_BBOX)){
-          int w=obj->old_bbox.x2-obj->old_bbox.x1;
-	  int h=obj->old_bbox.y2-obj->old_bbox.y1;
-	  if(w>0 && h>0){
-	      vo_osd_changed_flag=obj->flags&OSDFLAG_CHANGED;	// temp hack
-              remove(obj->old_bbox.x1,obj->old_bbox.y1,w,h);
-	  }
+        if(((obj->flags&OSDFLAG_CHANGED) || (obj->flags&OSDFLAG_VISIBLE)) &&
+           (obj->flags&OSDFLAG_OLD_BBOX)){
+            int w=obj->old_bbox.x2-obj->old_bbox.x1;
+            int h=obj->old_bbox.y2-obj->old_bbox.y1;
+            if(w>0 && h>0){
+                vo_osd_changed_flag=obj->flags&OSDFLAG_CHANGED;	// temp hack
+                remove(obj->old_bbox.x1,obj->old_bbox.y1,w,h);
+            }
 //	  obj->flags&=~OSDFLAG_OLD_BBOX;
-      }
-      obj=obj->next;
+        }
+        obj=obj->next;
     }
 }
 
@@ -1276,32 +1276,32 @@ void vo_draw_text_ext(int dxs, int dys, int left_border, int top_border,
     mp_osd_obj_t* obj=vo_osd_list;
     vo_update_osd_ext(dxs, dys, left_border, top_border, right_border, bottom_border, orig_w, orig_h);
     while(obj){
-      if(obj->flags&OSDFLAG_VISIBLE){
-	vo_osd_changed_flag=obj->flags&OSDFLAG_CHANGED;	// temp hack
-	switch(obj->type){
-	case OSDTYPE_SPU:
-	    vo_draw_spudec_sub(obj, draw_alpha); // FIXME
-	    break;
+        if(obj->flags&OSDFLAG_VISIBLE){
+            vo_osd_changed_flag=obj->flags&OSDFLAG_CHANGED;	// temp hack
+            switch(obj->type){
+            case OSDTYPE_SPU:
+                vo_draw_spudec_sub(obj, draw_alpha); // FIXME
+                break;
 #ifdef CONFIG_DVDNAV
-        case OSDTYPE_DVDNAV:
+            case OSDTYPE_DVDNAV:
 #endif
-	case OSDTYPE_TELETEXT:
-	case OSDTYPE_OSD:
-	case OSDTYPE_SUBTITLE:
-	case OSDTYPE_PROGBAR:
-	    vo_draw_text_from_buffer(obj,draw_alpha);
-	    break;
-	}
-	obj->old_bbox=obj->bbox;
-	obj->flags|=OSDFLAG_OLD_BBOX;
-      }
-      obj->flags&=~OSDFLAG_CHANGED;
-      obj=obj->next;
+            case OSDTYPE_TELETEXT:
+            case OSDTYPE_OSD:
+            case OSDTYPE_SUBTITLE:
+            case OSDTYPE_PROGBAR:
+                vo_draw_text_from_buffer(obj,draw_alpha);
+                break;
+            }
+            obj->old_bbox=obj->bbox;
+            obj->flags|=OSDFLAG_OLD_BBOX;
+        }
+        obj->flags&=~OSDFLAG_CHANGED;
+        obj=obj->next;
     }
 }
 
 void vo_draw_text(int dxs, int dys, void (*draw_alpha)(int x0, int y0, int w,int h, unsigned char* src, unsigned char *srca, int stride)) {
-  vo_draw_text_ext(dxs, dys, 0, 0, 0, 0, dxs, dys, draw_alpha);
+    vo_draw_text_ext(dxs, dys, 0, 0, 0, 0, dxs, dys, draw_alpha);
 }
 
 static int vo_osd_changed_status = 0;

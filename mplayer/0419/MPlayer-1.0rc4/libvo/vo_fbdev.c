@@ -1049,6 +1049,7 @@ static int config(uint32_t width, uint32_t height, uint32_t d_width,
     } else
 #endif
     {
+        // Sean, here change piction position
         int x_offset = 0, y_offset = 0;
         geometry(&x_offset, &y_offset, &out_width, &out_height, fb_xres, fb_yres);
 
@@ -1393,7 +1394,7 @@ void _demo_flip_page(void)
 
 static void draw_osd(void)
 {
-	mp_msg(MSGT_VO, MSGL_INFO, "### draw_osd ###\n");
+//	mp_msg(MSGT_VO, MSGL_INFO, "### draw_osd ###\n");
 
     vo_draw_text(in_width, in_height, draw_alpha);
 }
